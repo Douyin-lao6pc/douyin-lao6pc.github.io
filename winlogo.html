@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Windows 转圈 Logo 生成器</title>
+<style>
+@font-face {
+  font-family: "SegoeBoot";
+  src: url("sbs.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+}
+#loader {
+  font-family: "SegoeBoot";
+  font-size: 120px;
+  font-weight: 300;
+  color: #ffffff;
+  text-align: center;
+  line-height: 1;
+  transform: scaleX(1.30);
+  user-select: none;
+}
+.console {
+  position: fixed;
+  bottom: 20px;
+  background: rgba(0,0,0,0.85);
+  padding: 15px 20px;
+  border-radius: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+#winSwitchBtn, #resetBtn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #0078d4;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+#themeSelect {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #fff;
+  color: #0078d4;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+.top-row, .bottom-row {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+.control-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #fff;
+  font-size: 12px;
+}
+input[type="color"] {
+  width: 50px;
+  height: 30px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #0078d4;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+.check-wrap {
+  color: #fff;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 120px;
+  height: 6px;
+  background: #555;
+  border-radius: 3px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0078d4;
+  cursor: pointer;
+}
+.range-value {
+  font-size: 11px;
+  color: #aaa;
+}
+.popup-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+.popup-box {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  text-align: center;
+}
+.popup-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+.popup-tip {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 25px;
+}
+.popup-btn {
+  padding: 8px 25px;
+  background: #0078d4;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+<div class="popup-mask" id="popupMask">
+  <div class="popup-box">
+    <div class="popup-title">Windows转圈logo生成器</div>
+    <div class="popup-tip">保存成gif请自己录屏mp4后转gif文件</div>
+    <button class="popup-btn" id="enterBtn">进入</button>
+  </div>
+</div>
+<div id="loader"></div>
+<div class="console">
+  <button id="winSwitchBtn">Windows 11</button>
+  <select id="themeSelect">
+    <option value="1">蓝字白底</option>
+    <option value="2">蓝字黑底</option>
+    <option value="3">白字黑底</option>
+    <option value="4">白底黑字</option>
+  </select>
+  <div class="top-row">
+    <div class="control-group">
+      <label>字体颜色</label>
+      <input type="color" id="textColorPicker" value="#ffffff">
+    </div>
+    <div class="control-group">
+      <label>背景颜色</label>
+      <input type="color" id="bgColorPicker" value="#000000">
+    </div>
+    <button class="btn" id="pauseBtn">暂停</button>
+    <button id="resetBtn">从头开始</button>
+    <div class="check-wrap">
+      <input type="checkbox" id="loopCheck" checked>
+      <label for="loopCheck">重复播放</label>
+    </div>
+  </div>
+  <div class="bottom-row">
+    <div class="control-group">
+      <label>字体大小</label>
+      <input type="range" id="sizeSlider" min="60" max="200" value="120">
+      <span class="range-value" id="sizeValue">120px</span>
+    </div>
+    <div class="control-group">
+      <label>字体粗细</label>
+      <input type="range" id="weightSlider" min="10" max="900" step="10" value="300">
+      <span class="range-value" id="weightValue">300</span>
+    </div>
+    <div class="control-group">
+      <label>动画速度</label>
+      <input type="range" id="speedSlider" min="10" max="100" value="25" step="5">
+      <span class="range-value" id="speedValue">25ms</span>
+    </div>
+  </div>
+</div>
+<script>
+const charsWin11 = "".split('');
+const charsWin10 = "".split('');
+const themes = {1:{text:'#0078d4',bg:'#ffffff'},2:{text:'#0078d4',bg:'#000000'},3:{text:'#ffffff',bg:'#000000'},4:{text:'#000000',bg:'#ffffff'}};
+const DEFAULT_CFG={isWin11:true,theme:3,textColor:'#ffffff',bgColor:'#000000',fontSize:120,fontWeight:300,speed:25,loop:true,speedTouched:false};
+const WIN10_DEFAULT_SPEED=35;
+const el=document.getElementById('loader');
+const textColorPicker=document.getElementById('textColorPicker');
+const bgColorPicker=document.getElementById('bgColorPicker');
+const pauseBtn=document.getElementById('pauseBtn');
+const loopCheck=document.getElementById('loopCheck');
+const sizeSlider=document.getElementById('sizeSlider');
+const sizeValue=document.getElementById('sizeValue');
+const weightSlider=document.getElementById('weightSlider');
+const weightValue=document.getElementById('weightValue');
+const speedSlider=document.getElementById('speedSlider');
+const speedValue=document.getElementById('speedValue');
+const themeSelect=document.getElementById('themeSelect');
+const winSwitchBtn=document.getElementById('winSwitchBtn');
+const resetBtn=document.getElementById('resetBtn');
+const popupMask=document.getElementById('popupMask');
+const enterBtn=document.getElementById('enterBtn');
+let chars=charsWin11;
+let cfg=JSON.parse(JSON.stringify(DEFAULT_CFG));
+let i=0,timer=null,isPause=false,isFinished=false;
+function saveConfig(){localStorage.setItem('winLoaderCfg',JSON.stringify(cfg));}
+function loadConfig(){let s=localStorage.getItem('winLoaderCfg');if(s)cfg=JSON.parse(s);}
+function applyTheme(id){let t=themes[id];el.style.color=t.text;document.body.style.backgroundColor=t.bg;textColorPicker.value=t.text;backgroundColorPicker.value=t.bg;cfg.theme=id;cfg.textColor=t.text;cfg.bgColor=t.bg;saveConfig();}
+function renderFrame(){el.textContent=chars[i];}
+function startAnim(){if(timer)clearInterval(timer);isPause=false;pauseBtn.textContent="暂停";timer=setInterval(function(){i++;if(cfg.loop){i=i%chars.length;}else{if(i>=chars.length){i=chars.length-1;isFinished=true;pauseAnim();return;}}renderFrame();},cfg.speed);}
+function pauseAnim(){isPause=true;if(timer)clearInterval(timer);pauseBtn.textContent="继续";}
+function resetToStartAndPause(){i=0;isFinished=false;renderFrame();pauseAnim();}
+function switchWin(){if(!cfg.speedTouched&&!cfg.isWin11){cfg.speed=WIN10_DEFAULT_SPEED;speedSlider.value=WIN10_DEFAULT_SPEED;speedValue.textContent=WIN10_DEFAULT_SPEED+'ms';}chars=cfg.isWin11?charsWin11:charsWin10;winSwitchBtn.textContent=cfg.isWin11?"Windows 11":"Windows 10";saveConfig();i=0;renderFrame();if(!isPause)startAnim();}
+function initUI(){winSwitchBtn.textContent=cfg.isWin11?"Windows 11":"Windows 10";chars=cfg.isWin11?charsWin11:charsWin10;themeSelect.value=cfg.theme;applyTheme(cfg.theme);el.style.color=cfg.textColor;document.body.style.backgroundColor=cfg.bgColor;textColorPicker.value=cfg.textColor;backgroundColorPicker.value=cfg.bgColor;sizeSlider.value=cfg.fontSize;el.style.fontSize=cfg.fontSize+'px';sizeValue.textContent=cfg.fontSize+'px';weightSlider.value=cfg.fontWeight;el.style.fontWeight=cfg.fontWeight;weightValue.textContent=cfg.fontWeight;speedSlider.value=cfg.speed;speedValue.textContent=cfg.speed+'ms';loopCheck.checked=cfg.loop;renderFrame();}
+winSwitchBtn.onclick=function(){cfg.isWin11=!cfg.isWin11;switchWin();};
+resetBtn.onclick=function(){resetToStartAndPause();};
+themeSelect.onchange=function(){applyTheme(this.value);};
+pauseBtn.onclick=function(){if(isPause){startAnim();}else{pauseAnim();}};
+loopCheck.onchange=function(){cfg.loop=this.checked;saveConfig();};
+textColorPicker.oninput=function(){cfg.textColor=this.value;el.style.color=cfg.textColor;saveConfig();};
+bgColorPicker.oninput=function(){cfg.bgColor=this.value;document.body.style.backgroundColor=cfg.bgColor;saveConfig();};
+sizeSlider.oninput=function(){cfg.fontSize=parseInt(this.value);el.style.fontSize=cfg.fontSize+'px';sizeValue.textContent=cfg.fontSize+'px';saveConfig();};
+weightSlider.oninput=function(){cfg.fontWeight=parseInt(this.value);el.style.fontWeight=cfg.fontWeight;weightValue.textContent=cfg.fontWeight;saveConfig();};
+speedSlider.oninput=function(){cfg.speed=parseInt(this.value);cfg.speedTouched=true;speedValue.textContent=cfg.speed+'ms';saveConfig();if(!isPause)startAnim();};
+enterBtn.onclick=function(){popupMask.style.display="none";startAnim();};
+loadConfig();
+if(!cfg.speedTouched&&!cfg.isWin11){cfg.speed=WIN10_DEFAULT_SPEED;}
+initUI();
+</script>
+</body>
+</html>
